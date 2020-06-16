@@ -2,7 +2,7 @@
 <html>
 <head><meta charset="utf-8" />
 
-<title>Raport</title>
+<title>Kod</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -13077,7 +13077,7 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="-WUM---Projekt-2---raport-ko&#324;cowy-"><center> WUM - Projekt 2 - raport ko&#324;cowy </center><a class="anchor-link" href="#-WUM---Projekt-2---raport-ko&#324;cowy-">&#182;</a></h1><p><strong><center>Niewiasty WRS - Martyna Majchrzak, Agata Makarewicz, Renata Rólkiewicz </center></strong></p>
+<h1 id="-WUM---Projekt-2---kod-&#378;r&#243;d&#322;owy-"><center> WUM - Projekt 2 - kod &#378;r&#243;d&#322;owy </center><a class="anchor-link" href="#-WUM---Projekt-2---kod-&#378;r&#243;d&#322;owy-">&#182;</a></h1><p><strong><center>Niewiasty WRS - Martyna Majchrzak, Agata Makarewicz, Renata Rólkiewicz </center></strong></p>
 
 </div>
 </div>
@@ -14075,7 +14075,11 @@ memory usage: 1.7+ MB
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Przypomnijmy, że <em>SpecialDay</em> oznacza bliskość daty transakcji do szczególnych dni lub świąt (np. Dzień Matki). Im wyższa wartość tym bliżej.</p>
+<p>Wartość <em>SpecialDay</em> oznacza bliskość daty transakcji do szczególnych dni lub świąt (np. Dzień Matki). Im wyższa wartość tym danej dacie bliżej do bycia świętem, w szczególności:</p>
+<ul>
+<li>0.0 - w okolicach tej daty nie ma żadnego święta</li>
+<li>1.0 - ta data jest uznawana za święto</li>
+</ul>
 
 </div>
 </div>
@@ -16664,8 +16668,7 @@ Ponieważ DBSCAN nie przyjmuje liczby klastrów jako argumentu, a dobiera je aut
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <h1 id="5.-Ocena-wynik&#243;w">5. Ocena wynik&#243;w<a class="anchor-link" href="#5.-Ocena-wynik&#243;w">&#182;</a></h1><hr>
-<p>Po przetestowaniu modeli na "surowych" danych ustandaryzowanych oraz po zastosowaniu PCA okazało się, że nie redukcja wymiarów nie przyniosła znacznej poprawy wyników modeli. Mimo to, skupimy się na tych drugich wynikach, chociażby ze względu na to, że mają one nieznacznie mniejszy wymiar.
-Każda z użytych metryk wskazała inny model jako najlepszy:</p>
+<p>Po przetestowaniu modeli na "surowych" danych ustandaryzowanych oraz po zastosowaniu PCA okazało się, że nie redukcja wymiarów nie przyniosła znacznej poprawy wyników modeli. Mimo to, skupimy się na tych drugich wynikach, chociażby ze względu na to, że mają one nieznacznie mniejszy wymiar.</p>
 
 </div>
 </div>
@@ -16673,11 +16676,9 @@ Każda z użytych metryk wskazała inny model jako najlepszy:</p>
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>Dwie z rozważanych metryk (Silhouette oraz Davies-Bouldin Score) wskazały ten sam algorytm jako najlepszy, w odróżnieniu od Calinski-Harabasz Score.</p>
 <ul>
-<li><strong>Silhouette Score</strong>  -  <em>Agglomerative average linkage, n_clusters = 2</em></li>
-</ul>
-<ul>
-<li><strong>Davies-Bouldin Score</strong>  -  <em>Agglomerative single linkage, n_clusters = 9</em></li>
+<li><strong>Silhouette Score</strong> oraz <strong>Davies-Bouldin Score</strong>   -  <em>Agglomerative average linkage, n_clusters = 2</em></li>
 </ul>
 <ul>
 <li><strong>Calinski-Harabasz Score</strong>  -  <em>KMeans, n_clusters = 2</em></li>
@@ -17017,7 +17018,7 @@ posx and posy should be finite values
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Z powyższych wykresów wynika, że pod względem <em>Davies-Bouldin score</em> najlepszy okazał się model AgglomerativeClustering z parametrem <em>linkage='average'</em> i dla 2 klastrów (tak jak przy Silhouette score). Dla większych liczb klastrów jednak model z parametrem <em>'single'</em> osiągał od niego zawsze lepsze wyniki. Najniższą wartość metryki osiąga on dla 9 klastrów. Sprawdźmy więc, czy przypadkiem nie radzi sobie z klastrowaniem lepiej.</p>
+<p>Z powyższych wykresów wynika, że pod względem <em>Davies-Bouldin score</em> również najlepszy okazał się model AgglomerativeClustering z parametrem <em>linkage='average'</em> i dla 2 klastrów (tak jak przy Silhouette score). Dla większych liczb klastrów jednak model z parametrem <em>'single'</em> osiągał od niego zawsze lepsze wyniki. Najniższą wartość metryki osiąga on dla 9 klastrów. Sprawdźmy więc, czy przypadkiem nie radzi sobie z klastrowaniem lepiej.</p>
 
 </div>
 </div>
