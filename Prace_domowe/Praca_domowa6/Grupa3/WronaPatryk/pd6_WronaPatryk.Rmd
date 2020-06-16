@@ -1,0 +1,232 @@
+---
+title: "WUM - Praca domowa 6"
+author: "Patryk Wrona"
+date: "16 czerwca 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(NbClust)
+library(fpc)
+library(plotly)
+set.seed(707)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Wstęp, cele
+
+W tej pracy domowej dla 3-wymiarowego zbioru danych przetestuję 2 metody klasteryzacji:
+
+- kmeans
+- klastrowanie hierarchiczne z metodą 'average'
+
+oraz w celu wyznaczenia optymalnej liczby klastrów skorzystam z 3 metryk:
+
+- Silhouette index
+- Calinski-Harabasz index
+- Dunn index
+
+Ponadto, użyję metody wizualnej oraz wykorzystam pakiet NbClust.
+
+# Ładowanie danych oraz standaryzacja
+
+```{r}
+data <- read.csv("../../clustering_R3.csv")
+
+dataS <- as.data.frame(scale(data, scale = TRUE, center = TRUE))
+```
+
+# Wizualizacja zbioru danych
+
+```{r}
+plot_ly(x = dataS$X1, y = dataS$X2, z = dataS$X3, type = "scatter3d", mode = "markers")
+```
+
+
+# kmean & hclust
+
+```{r}
+km <- list(numeric(0)) # initializing variable containing results
+hc <- list(numeric(0)) # initializing variable containing results
+
+for (i in 1:10){
+  km[[i]] <- kmeans(dataS, centers = i)$cluster
+}
+
+d <- dist(dataS)
+for (i in 1:10){
+  hc[[i]] <- cutree(hclust(d, method = "average"), i)
+}
+```
+
+# Opis stosowanych metryk
+
+
+### Silhouette
+
+
+
+Współczynnik Solhouette jest miarą tego jak podobna jest dana obserwacja do swojego własnego klastra (cohesion) w porównaniu do innych występujących klastrów (separation). Silhouette przyjmuje wartości od -1 do +1, gdzie *im wyższa wartość tym lepiej dana obserwacja jest przypisana do swojego klastra i tym mniejsza jest jej relacja z innymi klastrami*.
+
+Im większy (bliższy 1) tym lepszy.
+
+### Calinski Harabasz index
+
+
+Ten indeks jest określony jako stosunek między miarą rozproszenia wewnątrz klastra do miary rozproszenia międzyklastrowego.
+
+Im większy tym lepszy.
+
+### Dunn's index
+
+Jest to stosunek minimalnej odległości między 2 obserwacjami w różnych klastrach do maksymalnej odległości między 2 różnymi obserwacjami należącymi do danego klastra.
+
+Dunn's index = minimum intercluster distance / maximum cluster diameter
+
+Im większy tym lepszy.
+
+# Wspolczynniki Silhouette & Calinski-Harabasz index & Dunn's index
+
+```{r}
+silhouette.km <- list(numeric(0))
+silhouette.hc <- list(numeric(0))
+ch.km <- list(numeric(0))
+ch.hc <- list(numeric(0))
+dunn.km <- list(numeric(0))
+dunn.hc <- list(numeric(0))
+
+for (i in 2:10){
+  staty.km <- cluster.stats(d, km[[i]]) # fpc library
+  staty.hc <- cluster.stats(d, hc[[i]]) # fpc library
+  
+  silhouette.km[[i]] <- staty.km$avg.silwidth 
+  silhouette.hc[[i]] <- staty.hc$avg.silwidth
+  ch.km[[i]] <- staty.km$ch
+  ch.hc[[i]] <- staty.hc$ch
+  dunn.km[[i]] <- staty.km$dunn
+  dunn.hc[[i]] <- staty.hc$dunn
+}
+```
+
+
+
+# Wykresy
+
+```{r}
+plot(x = 1:10, y = silhouette.km, main = "SILHOUETTE - kmeans", 
+     ylab = "Silhouette index", xlab = "Number of clusters") # 2
+```
+
+2 - najlepsza liczba klastrów wg powyższej metryki
+
+```{r}
+plot(x = 1:10, y = silhouette.hc, main = "SILHOUETTE - hclust", 
+     ylab = "Silhouette index", xlab = "Number of clusters") # 2
+```
+
+2 - najlepsza liczba klastrów wg powyższej metryki
+
+```{r}
+plot(x = 1:10, y = ch.km, main = "CALINSKI HARABASZ - kmeans", 
+     ylab = "Calinski Harabasz index", xlab = "Number of clusters") # 7
+```
+
+7 - najlepsza liczba klastrów wg powyższej metryki
+
+```{r}
+plot(x = 1:10, y = ch.hc, main = "CALINSKI HARABASZ - hclust", 
+     ylab = "Calinski Harabasz index", xlab = "Number of clusters") # 7
+```
+
+7 - najlepsza liczba klastrów wg powyższej metryki
+
+```{r}
+plot(x = 1:10, y = silhouette.km, main = "DUNN - kmeans", 
+     ylab = "Dunn's index", xlab = "Number of clusters") # 2
+```
+
+2 - najlepsza liczba klastrów wg powyższej metryki
+
+```{r}
+plot(x = 1:10, y = silhouette.hc, main = "DUNN - hclust", 
+     ylab = "Dunn's index", xlab = "Number of clusters") # 2
+```
+
+2 - najlepsza liczba klastrów wg powyższej metryki
+
+
+### Wnioski z wykresów
+
+Najczęściej najlepsza występująca liczba klastrów to 2. Dodam również wizualizację dla 7 klastrów w celu porównania.
+
+
+# Wizualizacja najlepszych klasteryzacji
+
+
+### kmeans - wyniki 3D
+
+```{r}
+# kmeans - 2 centers
+plot_ly(x = dataS$X1, y = dataS$X2, z = dataS$X3, type = "scatter3d", mode = "markers", color = km[[2]])
+```
+
+```{r}
+# kmeans - 7 centers
+plot_ly(x = dataS$X1, y = dataS$X2, z = dataS$X3, type = "scatter3d", mode = "markers", color = km[[7]])
+```
+
+### hclust - wyniki 3D
+
+```{r}
+# clust 2
+plot_ly(x = dataS$X1, y = dataS$X2, z = dataS$X3, type = "scatter3d", mode = "markers", color = hc[[2]])
+```
+
+```{r}
+# clust 7
+plot_ly(x = dataS$X1, y = dataS$X2, z = dataS$X3, type = "scatter3d", mode = "markers", color = hc[[7]])
+```
+
+
+# Zastosowanie NbClust
+
+```{r}
+nc <- NbClust(data = dataS, method = "complete")
+
+nc$Best.nc # 4
+```
+
+Według NbClust oraz posługując się metodą wizualną można dojść do wniosku, że 4 najlepszą liczbą klastrów dla tego zbioru danych.
+
+Niestety wybrane metody klasteryzacji źle klasteryzują dla tej liczby klastrów:
+
+```{r}
+# kmeans - 4 centers
+plot_ly(x = dataS$X1, y = dataS$X2, z = dataS$X3, type = "scatter3d", mode = "markers", color = km[[4]])
+```
+
+```{r}
+# clust 4 clusters
+plot_ly(x = dataS$X1, y = dataS$X2, z = dataS$X3, type = "scatter3d", mode = "markers", color = hc[[4]])
+```
+
+Porzebna nam jest inna metoda, pomysłem był hclust z metodą 'single':
+
+```{r}
+# THE BEST: hclust (single) with 4 clusters
+plot_ly(x = dataS$X1, y = dataS$X2, z = dataS$X3, type = "scatter3d", mode = "markers", color = cutree(hclust(d, method = 'single'),4))
+```
+
+Metoda klasteryzacji hclust 'single' oraz liczba klastrów 4 wydają się być idealne.
+
+# Wnioski
+
+Porównując metody klasteryzajci kmeans oraz hclust z metodą 'average' doszedłem do wniosku, że najlepsza dla nich liczba klastrów to 2 albo 7. Jednakże, lepsza od nich jest metoda klasteryzacji hierarchicznej **hclust z wykorzystaniem metody 'single' dla 4 klastrów** - taki wniosek wysnułem po zastosowaniu NbClust oraz obejrzeniu wizualnym zbioru danych w 3D.
+
+
+# Oświadczenie
+
+Oświadczam, że niniejsza praca stanowiąca podstawę do uznania osiągnięcia efektów uczenia się z przedmiotu *Wstęp do uczenia maszynowego* została wykonana przeze mnie samodzielnie.
+
+
