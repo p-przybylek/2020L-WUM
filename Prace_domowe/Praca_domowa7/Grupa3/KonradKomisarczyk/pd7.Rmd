@@ -158,3 +158,7 @@ sizes %>%
 
 Kompresja za pomocą PCA okazuje się w tym przypadku bezsensowna. Mimo, że teoretycznie powinnismy zyskać na rozmiarze danych, to w praktyce po zapisie pliku w formacie JPEG jego rozmiar przekracza oryginalny już przy użyciu 4 składowych.
 
+
+# Oświadczenie
+
+Oświadczam, że niniejsza praca stanowiąca podstawę do uznania osiągnięcia efektów uczenia się z przedmiotu *Wstęp do uczenia maszynowego* została wykonana przeze mnie samodzielnie.
