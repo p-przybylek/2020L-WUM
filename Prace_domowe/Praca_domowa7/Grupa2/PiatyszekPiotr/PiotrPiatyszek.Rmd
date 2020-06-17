@@ -1,0 +1,107 @@
+---
+title: "WUM PD 7"
+author: "Piotr Piątyszek"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+opts_chunk$set(echo = TRUE)
+opts_chunk$set(fig.width = 10)
+opts_chunk$set(fig.height = 6)
+opts_chunk$set(warning  = FALSE)
+opts_chunk$set(message  = FALSE)
+opts_chunk$set(cache = TRUE)
+```
+
+# Kompresja
+
+## Pomocnicza funkcja rysująca obrazki
+```{r}
+plotImg <- function(m) {
+  par(mar=c(0,0,0,0), mai=c(0,0,0,0))
+  dims <- dim(m)
+  plot(c(0, dims[1]), c(0, dims[2]), type='n', xlab="", ylab="")
+  rasterImage(m, 0, 0, dims[1], dims[2], interpolate=TRUE)
+}
+```
+
+## Otwieramy obrazek testowy
+```{r}
+library(png)
+# read img as matrix
+img_png <- readPNG("./dog.png")
+plotImg(img_png)
+```
+
+## Zmieniamy format
+Kompresujemy tylko warstwy RGB, kanał alpha pomijamy, ponieważ daje złe efekty. Nawet delikatne szumy na tym kanale istotnie pogarszają jakość całości. Wszystkie kanały układamy wzdłuż szerokości.
+```{r}
+# drop alpha channel and align layers along width axis
+imgwide <- matrix(img_png[,,1:3], nrow=nrow(img_png))
+# save height of image
+h <- nrow(imgwide)
+plotImg(imgwide)
+```
+
+## Obliczamy PCA
+Wyłączamy centrowanie i skalowanie, ponieważ obrazki już są znormalizowane do [0, 1].
+```{r}
+pca <- prcomp(imgwide, center=FALSE, scale=FALSE)
+```
+
+## Tabela kompresji
+Sprawdźmy ile razy mniejszy obrazek dostanejmy przy wypraniu `pc` wektorów. Rozmiar jest podany w ilości liczb.
+```{r}
+compression <- data.frame(
+  pc = 1:h,
+  # size of compressed image is sum of sizes of two matrices required to recreate image: x, rotation
+  size = sapply(1:h, function(k) length(pca$x[, 1:k]) + length(pca$rotation[,1:k]))
+)
+compression$size_ratio <- compression$size / length(imgwide)
+knitr::kable(head(compression, n=20))
+```
+
+# Porównanie wyników
+```{r, results="asis"}
+pcs <- c(1, 3, 5, 7, 10, 12, 15, 20, 25, 30, 40, 50, 75, 100, 150, 200)
+# for each number of principal components we decompress image to test it quality
+sapply(pcs, function(k) { 
+  cat(paste0("Principal components: ", k, " Size ratio: ", compression[k, ]$size_ratio), "\n")
+  img <- pca$x[,1:k] %*% t(pca$rotation[, 1:k])
+  # normalise
+  img[img > 1] <- 1
+  img[img < 0] <- 0
+  # split width into 3 layers
+  dim(img) <- c(nrow(img), ncol(img)/3, 3)
+  plotImg(img)
+}) -> tmp
+```
+
+# Sygnały
+
+## Ładujemy pomieszane sygnały
+```{r}
+sgn <- read.csv("signals.tsv", sep="\t")
+
+par(mfrow=c(2,2))
+for (i in 1:4) {
+  plot(sgn[, i+1], type="l")
+}
+```
+
+## Używamy FastICA do rozdzielenia sygnałów przy użyciu dwóch algorytmów.
+Pierwszy algorytm wydaje się dawać lepsze rezultaty.
+```{r}
+ica <- fastICA(sgn[2:5], n.comp=4, alg.typ="deflation")
+par(mfrow=c(2,2))
+for (i in 1:4) {
+  plot(ica$S[, i], type="l")
+}
+
+ica <- fastICA(sgn[2:5], n.comp=4, alg.typ="parallel")
+par(mfrow=c(2,2))
+for (i in 1:4) {
+  plot(ica$S[, i], type="l")
+}
+```
