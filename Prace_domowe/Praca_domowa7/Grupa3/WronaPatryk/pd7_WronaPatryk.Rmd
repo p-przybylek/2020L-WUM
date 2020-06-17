@@ -1,0 +1,159 @@
+---
+title: "Praca domowa 7 - WUM"
+author: "Patryk Wrona"
+date: "16 czerwca 2020"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+library(png)
+library(jpeg)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Wstęp, cele pracy
+
+Celem niniejszej pracy będzie kompresja obrazka z użyciem PCA.
+
+Rozważany obrazek:
+
+![](RP.png)
+
+Być może uda się odpowiedzieć na pytanie który z języków programowania jest bardziej 'odporny' na kompresję PCA, a który bardziej podatny.
+
+
+# Wczytanie obrazka
+
+```{r}
+img <- readPNG( "RP.png")
+
+# zapis liczby bitów w obrazku (wiersze x kolumny)
+orginal_size <- length(img) # 555 x 459 = 1018980
+
+# rozbicie komponentów R(red), G(green), B(blue)
+r <- img[,,1]
+g <- img[,,2]
+b <- img[,,3]
+```
+
+# Użycie PCA dla każdego koloru odzielnie
+
+```{r}
+img.r.pca <- prcomp(r, center = FALSE)
+img.g.pca <- prcomp(g, center = FALSE)
+img.b.pca <- prcomp(b, center = FALSE)
+
+rgb.pca <- list(img.r.pca, img.g.pca, img.b.pca)
+```
+
+
+# Zapis obrazów + obliczanie ich rozmiarów
+
+```{r}
+# W tej zmiennej przechowam liczbę najbardziej znaczących komponentów:
+pcnum = c(1, 2, 4, 6, 8, 10, 20, 40, 60, 80, 100, 200)
+# jest ich 12, więc trzeba będzie obliczyć rozmiar obrazka dla każdego ustawienia
+compressed_size <- rep(0,12)
+```
+
+```{r}
+k <- 0
+for(i in pcnum){
+  
+  # kompresuje obrazek dla zadanej liczby głównych komponentów (pcnum)
+
+  k <- k + 1
+  pca.img <- sapply(rgb.pca, function(j) {
+    compressed.img <- j$x[,1:i] %*% t(j$rotation[,1:i])
+  }, simplify = 'array')
+  writeJPEG(pca.img, paste0("R&Python_compressed_", i, '_components.jpg', sep = ''))
+  
+  # oblicza rozmiar stworzonego obrazka
+  compressed_size[k] <- sum( 
+    sapply(rgb.pca, function(j) {
+      length(j$x[,1:i]) + length(j$rotation[,1:i])
+    }, simplify = 'array')
+  )
+}
+```
+
+
+Teraz sprawdzimy ile razy dany obrazek zmniejszył swoje wymiary (l. bitów)
+
+```{r}
+round(orginal_size / compressed_size, digits = 1)
+
+# 335.0 167.5  83.7  55.8  41.9  33.5  16.7   8.4   5.6   4.2   3.3   1.7
+```
+
+# Wnioski - zysk na objętości & strata na jakości
+
+
+Dla odpowiednich ilości głownych komponentów wyznaczam przybliżony zysk na objętości:
+
+1 - 335 razy mniejsza objętość
+
+![](R&Python_compressed_1_components.jpg)
+
+Z tego obrazka da się wywnioskować chyba tylko tyle, że 'coś' było w jego środku.
+
+(2 - 167.5 razy mniejsza objętość)
+
+4 - 83.7 razy mniejsza objętość
+
+![](R&Python_compressed_4_components.jpg)
+
+Tu już można przeczytać literę 'R', więc chyba mamy zwycięzcę. ;)
+
+Oczywiście to pewnie dlatego, że to R jest olbrzymie. Na dole też już powoli można się domyślać, że chodzio Pythona - ze względu na kolory i powoli tworzące się już słowo 'python'.
+
+(6 - 55.8 razy mniejsza objętość)
+
+8 - 41.9 razy mniejsza objętość
+
+![](R&Python_compressed_8_components.jpg)
+
+Tutaj już nie mamy wątpliwości odnośnie tego co było na orginalnym obrazku.
+
+
+(10 - 33.5 razy mniejsza objętość)
+
+20 - 16.7 razy mniejsza objętość
+
+![](R&Python_compressed_20_components.jpg)
+
+Obrazek zaczyna być coraz bardziej wyraźny.
+
+(40 - 8.4 razy mniejsza objętość)
+
+60 - 5.6 razy mniejsza objętość
+
+![](R&Python_compressed_60_components.jpg)
+
+Natomiast dla tej kompresji podobają mi się oczy węża ( zwłaszcza tego u góry).
+
+(80 - 4.2 razy mniejsza objętość)
+
+100 - 3.3 razy mniejsza objętość
+
+![](R&Python_compressed_100_components.jpg)
+
+Tutaj nie ma większej różnicy w przekazie informacji - od wcześniejszych już kompresji było wiadomo, że chodzi o R i Pythona. Znika tylko tło - robi się białe.
+
+200 - 1.7 razy mniejsza objętość
+
+![](R&Python_compressed_200_components.jpg)
+
+Ta kompresja, zajmująca prawie 2 razy mniej objętości, jest prawie idealna w prównaniu do oryginalnego obrazka.
+
+# Konkluzja
+
+Udało mi się zastosować kompresję PCA do obrazka. Im więcej komponentów uwzględniałem, tym więcej ten obrazek zajmował miejsca, tylko że pewnie rozciągał się do oryginalnch wymiarów, przez co w rzeczywistości najwięcej miejsca zajmuje obrazek stworzony z 20 głownych komponentów. Najmniej miejsca zajmują obrazki o najgorszej i najlepszej jakości - czyli z użyciem 1 oraz 200 'principal components' odpowiednio 23.8 KB oraz 15.5 KB.
+
+
+# Oświadczenie
+
+Oświadczam, że niniejsza praca stanowiąca podstawę do uznania osiągnięcia efektów uczenia się z przedmiotu *Wstęp do uczenia maszynowego* została wykonana przeze mnie samodzielnie.
+
